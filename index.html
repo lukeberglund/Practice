@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Fetching Data</title>
+  </head>
+  <body>
+    <h1>Fetching Data</h1>
+
+    <!-- LOAD JQUERY LIBRARY - ONLY NECESSARY FOR "FURTHER EXPLORATION" -->
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+
+    <!-- LOAD D3 LIBRARY - ONLY NECESSARY FOR "FURTHER EXPLORATION" -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+    <script type="text/javascript">
+var myData
+var myResponse
+	  var url = "https://raw.githubusercontent.com/SCSU-CSC-Department/201701-csc-443-01/master/course.json"
+
+fetch(url)
+  .then(function(response) {
+    console.log("GOT A RESPONSE:", response)
+	myResponse = response
+    response.json()
+      .then(function(json){
+        console.log("GOT SOME DATA:", json)
+        // DO SOMETHING WITH THE DATA HERE!
+      })
+  })
+  .catch(function(err){
+    console.log("GOT AN ERROR:", err)
+  }) // handle errors
+	  
+	  
+	  
+    </script>
+  </body>
+</html>
