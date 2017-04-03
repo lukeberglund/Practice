@@ -1,207 +1,110 @@
-
-<html>
-<head>
-	<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-	<script src="/javascript/d3.v3.min.js" charset='UTF-8'></script>
-
-	<style>
-
-	body {
-		text-rendering: optimizeLegibility;
-		margin: 0px;
-	}
-
-	svg {
-		background-color: rgba(166, 178, 204, 1.000);
-	}
-
-	svg circle {
-		fill: rgba(225, 152, 53, 1.000);
-		-webkit-svg-shadow: -2px 1px 4px rgba(0, 0, 0, 0.6);
-	}
-
-	svg text {
-		fill: rgba(255, 255, 255, 0.9);
-		font-weight: normal;
-		font-family: sans-serif;
-		font-size: 10pt;
-		text-anchor: middle;
-		alignment-baseline: central;
-	}
-
-	svg .title {
-		font-family: sans-serif;
-		font-weight: bold;
-		font-size: 32pt;
-		letter-spacing: -0.05em;
-		text-anchor: start;
-		fill: rgba(255, 255, 255, 0.9);
-	}
-
-	svg div.labelDiv {
-		padding: 0px;
-		margin: 0px;
-		display: table-cell;
-		vertical-align: middle;
-		text-align: center;
-	}
-
-	svg foreignObject {
-		padding: 0px;
-	}
-
-	svg .label {
-		font-weight: normal;
-		font-family: sans-serif;
-		font-size: 10pt;
-		color: rgba(255, 255, 255, 0.9);
-	}
-	
-	</style>
-</head>
-
-<body>
-
-	<script>
-
-	var h = 500;
-	var w = 1200;
-	var minimumBubbleSize = 10;
-	var labelsWithinBubbles = true;
-	var title = "Relative Sizes Of The Planets, In Order Of Size";
-	var dataset = [{label : "Mercury", value: 1134, xPos: 0},
-	{label: "Venus ", value: 7088, xPos: 0},
-	{label: "Earth", value: 7853, xPos: 0},
-	{label: "Mars", value: 2206, xPos: 0},
-	{label: "Jupiter", value: 983415, xPos: 0},
-	{label: "Uranus", value: 125660, xPos: 0},
-	{label: "Neptune", value: 113408, xPos: 0},
-	{label: "Saturn", value: 693957, xPos: 0}];
-	var gapBetweenBubbles = 15;
-	var xPadding = 50;
-	var yPadding = 100;
-	var scaling = 20;
-
-	/* Sort the dataset to ensure the bubble are always ascending */
-	dataset = dataset.sort(function (a, b) { return (a.value - b.value);});
-	
-	/* Scale the dataset */
-	var factor = minimumBubbleSize / dataset[0].value;
-	dataset.forEach(function(d) { d.value = d.value * factor; });
-
-	/* Scaling */
-
-	function getRadius(area) {
-		return Math.sqrt(area / Math.PI);
-	}
-
-	function getLabelDivSideFromArea(area) {
-		return Math.sqrt(Math.pow(2 * rScale(area), 2) / 2);
-	}
-
-	var rScale = function(input) {
-		/* Magic number here is just to get a reasonable sized smallest bubble */
-		return getRadius(input) * scaling;
-	}
-
-	/* For bubbles that are too big to centre their text, compute a better position */
-
-	function getNewXPosition(leftBubble, rightBubble) {
-
-	}
-
-	function getNewYPosition(leftBubble, rightBubble) {
-
-	}
-
-	/* Create the chart */
-
-	var svg = d3.select("body")
-	.append("svg")
-	.attr("width", w)
-	.attr("height", h)
-
-	/* Adjust left hand side to add on the radius of the first bubble */
-	xPaddingPlusRadius = xPadding + rScale(dataset[0].value);
-	dataset[0].xPos = xPaddingPlusRadius;
-
-	var circles = svg.selectAll("circle")
-	.data(dataset)
-	.enter()
-	.append("circle");
-
-	var accumulator = xPaddingPlusRadius;
-	
-	circles.attr("cx", function(d, i) {
-
-		if (i > 0) {
-
-			var previousRadius = rScale(dataset[i-1].value);
-			var currentRadius = rScale(d.value);
-
-			var hypotenuseLength = previousRadius + currentRadius + gapBetweenBubbles;
-			var yLength = currentRadius - previousRadius;
-
-			var increment = Math.sqrt(Math.pow(hypotenuseLength, 2) - Math.pow(yLength, 2));
-			accumulator += increment;
-			d.xPos = accumulator;
-			return accumulator;
-
-		} else {
-			return xPaddingPlusRadius;
-		}
-
-	})
-	.attr("cy", function(d) {
-		return h - rScale(d.value) - yPadding;
-	})
-	.attr("r", function(d) {
-		return rScale(d.value);
-	});
-
-	/* Place text in the circles. Could try replacing this with foreignObject */
-
-	svg.selectAll("foreignObject")
-	.data(dataset)
-	.enter()
-	.append("foreignObject")
-	.attr("x", function(d, i) {
-		if (d.xPos > w) {
-			/* Do the different thing */
-			return d.xPos - (getLabelDivSideFromArea(d.value)/2);
-		} else {
-			return d.xPos - (getLabelDivSideFromArea(d.value)/2);
-		}
-	})
-	.attr("y", function(d, i) {
-		if (labelsWithinBubbles) {
-			if ((h - rScale(d.value) - yPadding) < 0) {
-				/* Do the different thing */
-				return h - rScale(d.value) - yPadding - (getLabelDivSideFromArea(d.value)/2);
-			} else {
-				return h - rScale(d.value) - yPadding - (getLabelDivSideFromArea(d.value)/2);
-			}
-		} else {
-			return h - yPadding + 20;
-		}
-	})
-	.attr("width", function(d) { return getLabelDivSideFromArea(d.value); })
-	.attr("height", function(d) { return getLabelDivSideFromArea(d.value); })
-	.append("xhtml:body")
-	.append("div")
-	.attr("style", function(d) { return "width: " + getLabelDivSideFromArea(d.value) + "; height: " + getLabelDivSideFromArea(d.value); })
-	.attr("class", "labelDiv")
-	.html(function(d, i) { return "<p class='label'>" + d.label + "</p>"; });
-
-	/* Draw the chart title */
-
-	svg.append("text")
-	.attr("x", xPadding)
-	.attr("y", h - 40)
-	.attr("class", "title")
-	.text(title);
-
-	</script>
-
-</body>
-</html>
+<div class="panel panel-default" id="gadget_Panel">
+    <div class="panel-heading">
+        <h3 class="panel-title">Title Goes Here</h3>
+    </div>
+    <div class="panel-body">
+        <div data-bind="visible: retrievingData()">
+            <img src="/Content/img/ajaxLoaderLongBar.gif" alt="Loading..." />
+        </div>
+        <div data-bind="visible: !retrievingData() && Object.keys(data()).length == 0">
+            No Data found.
+        </div>
+        <div id="Gadget" data-bind="visible: !retrievingData() && Object.keys(data()).length > 0"></div>
+    </div>
+</div>
+<script>
+    var gadget_projection,
+        gadget_path,
+        gadget_svg,
+        gadget_g,
+        gadget_centered,
+        gadget_heatmap,
+        gadget_states,
+        gadget_labels,
+        gadget_width = 800,
+        gadget_height = 400;
+    function gadget_Resize() {
+        $('#Gadget').height($('#Gadget').width() * gadget_height / gadget_width);
+    }
+    function gadget_DrawMap(data) {
+        gadget_projection = d3.geo.albersUsa()
+            .scale(1000)
+            .translate([0, 0]);
+        gadget_path = d3.geo.path()
+            .projection(gadget_projection);
+        gadget_svg = d3.select("#gadget_")
+            .append("svg")
+            .attr("class", "map")
+            .attr("viewBox", "0 0 " + gadget_width + " " + gadget_height);
+        gadget_svg
+            .append("rect")
+            .attr("class", "background")
+            .attr("width", gadget_width)
+            .attr("height", gadget_height)
+            .on("click", gadget_click);
+        gadget_g = gadget_svg
+            .append("g")
+            .attr("transform", "translate(495, 230)")
+            .append("g")
+            .attr("class", "states");
+        d3.json('statePolygonData.js', function (json) {
+            gadget_heatmap = d3.scale.linear()
+                .domain([0, d3.max(json.features, function(d) { return data[d.properties.abbr]; })])
+                .interpolate(d3.interpolateRgb)
+                .range(["#ffffff", "#0068AD"]);
+            gadget_states = gadget_g.selectAll("path")
+                .data(json.features)
+                .enter()
+                .append("path")
+                .attr("d", gadget_path)
+                .attr("name", function(d) { return "path-" + d.properties.abbr; })
+                .style("fill", function (d) { return gadget_heatmap(data[d.properties.abbr] || 0); })
+                .on("click", gadget_click);
+            gadget_labels = gadget_g.selectAll("text")
+                .data(json.features)
+                .enter()
+                .append("text")
+                .attr("transform", function (d) { return "translate(" + gadget_path.centroid(d) + ")"; })
+                .attr("name", function (d) { return 'label-' + d.properties.abbr; })
+                .attr("dx", function (d) { return d.properties.dx || "0"; })
+                .attr("dy", function (d) { return d.properties.dy || "0.35em"; })
+                .on("click", gadget_click)
+                .text(function (d) { return d.properties.abbr; });
+        });
+        // Fix for IE
+        gadget_Resize();
+    }
+    function  gadget_click(d) {
+        var x = 0,
+            y = 0,
+            scale = 1;
+        if (d && gadget_centered !== d) {
+            var bounds = gadget_path.bounds(d),
+                dx = bounds[1][0] - bounds[0][0],
+                dy = bounds[1][1] - bounds[0][1];
+            x = (bounds[0][0] + bounds[1][0]) / 2,
+            y = (bounds[0][1] + bounds[1][1]) / 2;
+            scale = Math.min(7, .8 / Math.max(dx / gadget_width, dy / gadget_height));
+            gadget_centered = d;
+        } else {
+            gadget_centered = null;
+        }
+        gadget_g.transition()
+            .duration(1000)
+            .style("stroke-width", 1.5 / scale + "px")
+            .attr("transform", "scale(" + scale + ")translate(" + -x + ", " + -y + ")");
+        gadget_g.selectAll("path")
+            .classed("active", gadget_centered && function (d2) { return d2 === gadget_centered; });
+        gadget_g.selectAll("text")
+            .text(function (d2) { return d2.properties.abbr; })
+            .classed("active", false);
+        if (gadget_centered) {
+            gadget_g.selectAll("text")
+                .text('')
+                .classed("active", false);
+            gadget_g.select("[name='label-" + gadget_centered.properties.abbr + "']")
+                .text(function(d2) { return d2.properties.name + ': ' + (gadget_viewModel.data()[d2.properties.abbr] || 0); })
+                .classed("active", gadget_centered && function (d2) { return d2 === gadget_centered; });
+        }
+    }
+</script>
